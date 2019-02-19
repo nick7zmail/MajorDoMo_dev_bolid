@@ -1,0 +1,56 @@
+
+ <!-- action usual -->
+ [#if DATA_SOURCE="dev_bolid_devices" || DATA_SOURCE=""#]
+ <!-- table dev_bolid_devices search -->
+ [#if VIEW_MODE="search_dev_bolid_devices" || VIEW_MODE=""#]
+  [#inc dev_bolid_devices_search_admin.html#]
+ [#endif VIEW_MODE#]
+ <!-- / table dev_bolid_devices search -->
+ <!-- table dev_bolid_devices edit -->
+ [#if VIEW_MODE="edit_dev_bolid_devices"#]
+   [#if ID!=""#]
+   [#if TITLE!=""#]<h4>[#TITLE#]</h4>[#endif TITLE#]
+<ul class="nav nav-tabs">
+  <li[#if TAB=""#] class="active"[#endif#]>
+   <a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab="><#LANG_GENERAL#></a>
+  </li>
+  <li[#if TAB="data"#] class="active"[#endif#]>
+   <a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=data">&#060#LANG_DATA#&#062</a>
+  </li>
+</ul>
+&nbsp;<br/>
+   [#endif ID#]
+   [#if TAB=""#]
+    [#inc dev_bolid_devices_edit_default.html#]
+   [#endif TAB#]
+   [#if TAB="data"#]
+    [#inc dev_bolid_devices_edit_data.html#]
+   [#endif TAB#]
+ [#endif VIEW_MODE#]
+ <!-- / table dev_bolid_devices edit -->
+ <!-- table dev_bolid_devices view --> 
+ [#if VIEW_MODE="view_dev_bolid_devices"#]
+   [#if TAB=""#]
+    [#inc dev_bolid_devices_view_default.html#]
+   [#endif TAB#]
+ [#endif VIEW_MODE#]
+ <!-- / table dev_bolid_devices view -->
+ [#endif DATA_SOURCE#]
+ <!-- action usual -->
+ [#if DATA_SOURCE="dev_bolid_data"#]
+ <!-- table dev_bolid_data search -->
+ [#if VIEW_MODE="search_dev_bolid_data" || VIEW_MODE=""#]
+  [#inc dev_bolid_data_search_admin.html#]
+ [#endif VIEW_MODE#]
+ <!-- / table dev_bolid_data search -->
+ <!-- table dev_bolid_data edit -->
+ [#if VIEW_MODE="edit_dev_bolid_data"#]
+   [#inc dev_bolid_data_edit.html#]
+ [#endif VIEW_MODE#]
+ <!-- / table dev_bolid_data edit -->
+ <!-- table dev_bolid_data view --> 
+ [#if VIEW_MODE="view_dev_bolid_data"#]
+   [#inc dev_bolid_data_view.html#]
+ [#endif VIEW_MODE#]
+ <!-- / table dev_bolid_data view -->
+ [#endif DATA_SOURCE#]
