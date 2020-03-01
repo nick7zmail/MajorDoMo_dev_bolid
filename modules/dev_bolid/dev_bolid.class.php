@@ -1,6 +1,6 @@
 <?php
 /**
-* Bolid 
+* Bolid
 * @package project
 * @author Wizard <sergejey@gmail.com>
 * @copyright http://majordomo.smartliving.ru/ (c)
@@ -201,13 +201,15 @@ function usual(&$out) {
  }
  function propertySetHandle($object, $property, $value) {
    $table='dev_bolid_data';
-   $properties=SQLSelect("SELECT ID, DEVICE_ID, TITLE FROM $table WHERE LINKED_OBJECT LIKE '".DBSafe($object)."' AND LINKED_PROPERTY LIKE '".DBSafe($property)."'");
+   $properties=SQLSelect("SELECT * FROM $table WHERE LINKED_OBJECT LIKE '".DBSafe($object)."' AND LINKED_PROPERTY LIKE '".DBSafe($property)."'");
    $total=count($properties);
    if ($total) {
     for($i=0;$i<$total;$i++) {
-		$device=SQLSelectOne("SELECT * FROM 'dev_bolid_devices' WHERE ID='".$properties[$i]['DEVICE_ID']."'");
+		$device=SQLSelectOne("SELECT * FROM dev_bolid_devices WHERE ID='".$properties[$i]['DEVICE_ID']."'");
 		if($device['TYPE']=='s2000sp1') {
 			require(DIR_MODULES.$this->name.'/dev_bolid_s2000sp1.inc.php');
+		} elseif($device['TYPE']=='s2000pp') {
+			require(DIR_MODULES.$this->name.'/dev_bolid_s2000pp.inc.php');
 		}
     }
    }
@@ -225,6 +227,35 @@ function usual(&$out) {
  function install($data='') {
   parent::install();
  }
+
+function write_com($f_file,$cmd_bit,$size_read,$ok)
+{
+	//for($i=0; $i < count($cmd_bit); $i++) {$c .= chr($cmd_bit[$i]);}
+	fwrite($f_file,$cmd_bit.$this->crc16($cmd_bit));
+	return $fresult = fread($f_file,$size_read);
+}
+
+function crc16($data)
+{
+  $crc = 0xFFFF;
+  for ($i = 0; $i < strlen($data); $i++)
+  {
+    $crc ^=ord($data[$i]);
+      for ($j = 8; $j !=0; $j--)
+    {
+      if (($crc & 0x0001) !=0)
+      {
+        $crc >>= 1;
+        $crc ^= 0xA001;
+      }
+      else
+      $crc >>= 1;
+    }
+  }
+  $highCrc=floor($crc/256);
+  $lowCrc=($crc-$highCrc*256);
+  return chr($lowCrc).chr($highCrc);
+}
 /**
 * Uninstall
 *
@@ -246,8 +277,8 @@ function usual(&$out) {
 */
  function dbInstall($data) {
 /*
-dev_bolid_devices - 
-dev_bolid_data - 
+dev_bolid_devices -
+dev_bolid_data -
 */
   $data = <<<EOD
  dev_bolid_devices: ID int(10) unsigned NOT NULL auto_increment
@@ -258,6 +289,8 @@ dev_bolid_data -
  dev_bolid_data: TITLE varchar(100) NOT NULL DEFAULT ''
  dev_bolid_data: VALUE varchar(255) NOT NULL DEFAULT ''
  dev_bolid_data: DEVICE_ID int(10) NOT NULL DEFAULT '0'
+ dev_bolid_data: TYPE varchar(10) NOT NULL DEFAULT ''
+ dev_bolid_data: TYPE_NUM int(10) NOT NULL DEFAULT '1'
  dev_bolid_data: LINKED_OBJECT varchar(100) NOT NULL DEFAULT ''
  dev_bolid_data: LINKED_PROPERTY varchar(100) NOT NULL DEFAULT ''
 EOD;

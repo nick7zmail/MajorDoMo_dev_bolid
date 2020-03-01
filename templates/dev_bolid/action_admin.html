@@ -14,8 +14,14 @@
   <li[#if TAB=""#] class="active"[#endif#]>
    <a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab="><#LANG_GENERAL#></a>
   </li>
-  <li[#if TAB="data"#] class="active"[#endif#]>
-   <a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=data">&#060#LANG_DATA#&#062</a>
+  <li[#if TAB="zones"#] class="active"[#endif#]>
+   <a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=zones">Зоны</a>
+  </li>
+  <li[#if TAB="sections"#] class="active"[#endif#]>
+   <a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=sections">Разделы</a>
+  </li>
+  <li[#if TAB="sensors"#] class="active"[#endif#]>
+   <a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=sensors">Датчики</a>
   </li>
 </ul>
 &nbsp;<br/>
@@ -23,12 +29,12 @@
    [#if TAB=""#]
     [#inc dev_bolid_devices_edit_default.html#]
    [#endif TAB#]
-   [#if TAB="data"#]
+   [#if TAB="zones" || TAB="sections" #]
     [#inc dev_bolid_devices_edit_data.html#]
    [#endif TAB#]
  [#endif VIEW_MODE#]
  <!-- / table dev_bolid_devices edit -->
- <!-- table dev_bolid_devices view --> 
+ <!-- table dev_bolid_devices view -->
  [#if VIEW_MODE="view_dev_bolid_devices"#]
    [#if TAB=""#]
     [#inc dev_bolid_devices_view_default.html#]
@@ -48,7 +54,7 @@
    [#inc dev_bolid_data_edit.html#]
  [#endif VIEW_MODE#]
  <!-- / table dev_bolid_data edit -->
- <!-- table dev_bolid_data view --> 
+ <!-- table dev_bolid_data view -->
  [#if VIEW_MODE="view_dev_bolid_data"#]
    [#inc dev_bolid_data_view.html#]
  [#endif VIEW_MODE#]

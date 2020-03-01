@@ -42,14 +42,21 @@
   // step: default
   if ($this->tab=='') {
   }
-  if ($this->tab=='data') {
+if ($this->tab=='zones' || $this->tab=='sections' || $this->tab=='devices') {
    //dataset2
    $new_id=0;
+   if ($this->mode=='update') {
+     global $title_new;
+     if ($title_new) {
+       $prop=array('TITLE'=>$title_new,'DEVICE_ID'=>$rec['ID'],'TYPE'=>$this->tab);
+       $new_id=SQLInsert('dev_bolid_data',$prop);
+     }
+   }
    global $delete_id;
    if ($delete_id) {
     SQLExec("DELETE FROM dev_bolid_data WHERE ID='".(int)$delete_id."'");
    }
-   $properties=SQLSelect("SELECT * FROM dev_bolid_data WHERE DEVICE_ID='".$rec['ID']."' ORDER BY ID");
+   $properties=SQLSelect("SELECT * FROM dev_bolid_data WHERE DEVICE_ID='".$rec['ID']."' AND TYPE='".$this->tab."' ORDER BY ID");
    $total=count($properties);
    for($i=0;$i<$total;$i++) {
     if ($properties[$i]['ID']==$new_id) continue;
@@ -58,6 +65,8 @@
       $properties[$i]['TITLE']=trim(${'title'.$properties[$i]['ID']});
       global ${'value'.$properties[$i]['ID']};
       $properties[$i]['VALUE']=trim(${'value'.$properties[$i]['ID']});
+      global ${'typenum'.$properties[$i]['ID']};
+      $properties[$i]['TYPE_NUM']=trim(${'typenum'.$properties[$i]['ID']});
       global ${'linked_object'.$properties[$i]['ID']};
       $properties[$i]['LINKED_OBJECT']=trim(${'linked_object'.$properties[$i]['ID']});
       global ${'linked_property'.$properties[$i]['ID']};
@@ -73,7 +82,7 @@
       }
      }
    }
-   $out['PROPERTIES']=$properties;   
+   $out['PROPERTIES']=$properties;
   }
   if (is_array($rec)) {
    foreach($rec as $k=>$v) {
