@@ -17,20 +17,37 @@ if (!$tmp['ID'])
    exit; // no devices added -- no need to run this cycle
 echo date("H:i:s") . " running " . basename(__FILE__) . PHP_EOL;
 $latest_check=0;
-$checkEvery=5; // poll every 5 seconds
+$checkEvery=10;
+
 while (1)
 {
-   setGlobal((str_replace('.php', '', basename(__FILE__))) . 'Run', time(), 1);
    if ((time()-$latest_check)>$checkEvery) {
-    $latest_check=time();
-    echo date('Y-m-d H:i:s').' Polling devices...';
-    $dev_bolid_module->processCycle();
+     setGlobal((str_replace('.php', '', basename(__FILE__))) . 'Run', time(), 1);
+     $latest_check=time();
+     echo date('Y-m-d H:i:s').' Polling devices...';
+     $devices=SQLSelect("SELECT * FROM dev_bolid_devices");
+     $total=count($devices);
+     if ($total) {
+       for($i=0;$i<$total;$i++) {
+         $com[$i]=$dev_bolid_module->createCom($devices[$i]);
+         //опрос зон
+         $dev_bolid_module->processCycle($com[$i], 'check', 'zones');
+         //опрос разделов
+         $dev_bolid_module->processCycle($com[$i], 'check', 'sections');
+         fclose($com[$i]);
+       }
+     }
    }
+   $opqueue=checkOperationsQueue('m_bolid');
+   if($opqueue) {
+     $dev_bolid_module->processCycle($com[$i], $opqueue[0]['DATANAME'], 'zonessections', $opqueue[0]['DATAVALUE']);
+   }
+
+
    if (file_exists('./reboot') || IsSet($_GET['onetime']))
    {
       $db->Disconnect();
       exit;
    }
-   sleep(1);
 }
 DebMes("Unexpected close of cycle: " . basename(__FILE__));

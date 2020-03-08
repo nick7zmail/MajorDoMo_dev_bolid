@@ -214,8 +214,86 @@ function usual(&$out) {
     }
    }
  }
- function processCycle() {
-  //to-do
+ function processCycle($com, $act, $type, $data = '') {
+   if($act=='check') {
+     if($type=='zones') {
+       echo date('Y-m-d H:i:s').' Polling zones...'.PHP_EOL;
+       $properties=SQLSelect("SELECT * FROM dev_bolid_data WHERE TYPE = 'zones'");
+       $total=count($properties);
+       if ($total) {
+        for($i=0;$i<$total;$i++) {
+          $cmd="\x01";
+          $cmd.="\x03";
+          $cmd.="\x9C";
+          $cmd.=chr(0x40+$properties[$i]['TYPE_NUM']-1);
+          $cmd.="\x00";
+          $cmd.="\x01";
+          $fresult=$this->write_com($com,$cmd,7,1);
+          if ( (ord($fresult[4]) == 0) && ( ord($fresult[3]) == 109) ) {
+              $state=0;
+          } elseif ( (ord($fresult[4]) == 0) && ( ord($fresult[3]) == 24) ) {
+              $state=1;
+          } else {$state=NULL;}
+          debmes('[get] '.$properties[$i]['TYPE_NUM'].' zone state:'.$state, 'bolid');
+          if(isset($properties[$i]['LINKED_OBJECT']) && isset($properties[$i]['LINKED_PROPERTY'])) {
+              sg($properties[$i]['LINKED_OBJECT'].'.'.$properties[$i]['LINKED_PROPERTY'], $state, array($this->name => '0'));
+          }
+        }
+       }
+     } elseif ($type=='sections') {
+       $properties=SQLSelect("SELECT * FROM dev_bolid_data WHERE TYPE = 'sections'");
+       $total=count($properties);
+       if ($total) {
+        for($i=0;$i<$total;$i++) {
+          echo date('Y-m-d H:i:s').' Polling sections...'.PHP_EOL;
+          $cmd="\x01";
+          $cmd.="\x03";
+          $cmd.="\xAC";
+          $cmd.=chr(0x40+$properties[$i]['TYPE_NUM']-1);
+          $cmd.="\x00";
+          $cmd.="\x01";
+          $fresult=$this->write_com($com,$cmd,7,1);
+          if ( (ord($fresult[4]) == 0) && ( ord($fresult[3]) == 109) ) {
+              $state=0;
+          } elseif ( (ord($fresult[4]) == 0) && ( ord($fresult[3]) == 24) ) {
+              $state=1;
+          } else {$state=NULL;}
+            debmes('[get] '.$properties[$i]['TYPE_NUM'].' sect state:'.$state, 'bolid');
+          if(isset($properties[$i]['LINKED_OBJECT']) && isset($properties[$i]['LINKED_PROPERTY']) && $state!==NULL) {
+              sg($properties[$i]['LINKED_OBJECT'].'.'.$properties[$i]['LINKED_PROPERTY'], $state, array($this->name => '0'));
+          }
+        }
+       }
+     }
+   } elseif ($act=='set') {
+     debmes('[op] set '.$data, 'bolid');
+     if ($type=='zonessections') {
+       $params=json_decode($data, TRUE);
+       debmes('[set] '.$params['TYPE_NUM'].' sect state:'.$params['VALUE'], 'bolid');
+       $cmd="\x01";
+       $cmd.="\x06";
+       if ($params['TYPE']=='zones') {
+         $cmd.="\x9C";
+       } elseif($params['TYPE']=='sections') {
+         $cmd.="\xAC";
+       }
+       $cmd.=chr(0x40+$params['TYPE_NUM']-1);
+      $cmd.="\x00";
+       if($params['VALUE']==1) {
+         $cmd.="\x18";
+       } else {
+         $cmd.="\x6D";
+       }
+       $fresult=$this->write_com($com,$cmd,8,1);
+     }
+   }
+ }
+
+ function createCom($device) {
+   $com=$device['PORT'];
+   exec("mode $com: BAUD=9600 DATA=8 STOP=1 to=on PARITY=none xon=off odsr=off octs=off dtr=off rts=off idsr=off");
+   $f = fopen($com, 'r+');
+   return $f;
  }
 /**
 * Install
@@ -230,9 +308,12 @@ function usual(&$out) {
 
 function write_com($f_file,$cmd_bit,$size_read,$ok)
 {
+  //debmes('[---] '.string($cmd_bit), 'bolid');
 	//for($i=0; $i < count($cmd_bit); $i++) {$c .= chr($cmd_bit[$i]);}
 	fwrite($f_file,$cmd_bit.$this->crc16($cmd_bit));
-	return $fresult = fread($f_file,$size_read);
+	$fresult = fread($f_file,$size_read);
+  //debmes('[+++] '. string($fresult), 'bolid');
+  return $fresult;
 }
 
 function crc16($data)

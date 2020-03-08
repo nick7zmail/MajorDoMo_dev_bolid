@@ -42,7 +42,7 @@
   // step: default
   if ($this->tab=='') {
   }
-if ($this->tab=='zones' || $this->tab=='sections' || $this->tab=='devices') {
+if ($this->tab=='zones' || $this->tab=='sections' || $this->tab=='relays') {
    //dataset2
    $new_id=0;
    if ($this->mode=='update') {
