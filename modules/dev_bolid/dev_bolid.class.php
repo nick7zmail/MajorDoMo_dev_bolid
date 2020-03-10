@@ -229,13 +229,20 @@ function usual(&$out) {
           $cmd.="\x00";
           $cmd.="\x01";
           $fresult=$this->write_com($com,$cmd,7,1);
-          if ( (ord($fresult[4]) == 0) && ( ord($fresult[3]) == 109) ) {
+          if ( ( ord($fresult[3]) == 109) ) {
               $state=0;
-          } elseif ( (ord($fresult[4]) == 0) && ( ord($fresult[3]) == 24) ) {
+          } elseif ( ( ord($fresult[3]) == 24) ) {
               $state=1;
-          } else {$state=NULL;}
+          } else {
+              registerEvent('bolid/alarms/'.ord($fresult[3]), array('zone'=>$properties[$i]['TYPE_NUM']));
+              $state=NULL;
+          }
+          if ( ( ord($fresult[4]) != 0) && ( ord($fresult[4]) != 47) ) {
+              registerEvent('bolid/alarms/'.ord($fresult[4]), array('zone'=>$properties[$i]['TYPE_NUM']));
+          }
+
           debmes('[get] '.$properties[$i]['TYPE_NUM'].' zone state:'.$state, 'bolid');
-          if(isset($properties[$i]['LINKED_OBJECT']) && isset($properties[$i]['LINKED_PROPERTY'])) {
+          if(isset($properties[$i]['LINKED_OBJECT']) && isset($properties[$i]['LINKED_PROPERTY']) && $state!==NULL) {
               sg($properties[$i]['LINKED_OBJECT'].'.'.$properties[$i]['LINKED_PROPERTY'], $state, array($this->name => '0'));
           }
         }
@@ -259,6 +266,30 @@ function usual(&$out) {
               $state=1;
           } else {$state=NULL;}
             debmes('[get] '.$properties[$i]['TYPE_NUM'].' sect state:'.$state, 'bolid');
+          if(isset($properties[$i]['LINKED_OBJECT']) && isset($properties[$i]['LINKED_PROPERTY']) && $state!==NULL) {
+              sg($properties[$i]['LINKED_OBJECT'].'.'.$properties[$i]['LINKED_PROPERTY'], $state, array($this->name => '0'));
+          }
+        }
+       }
+     } elseif ($type=='relays') {
+       $properties=SQLSelect("SELECT * FROM dev_bolid_data WHERE TYPE = 'relays'");
+       $total=count($properties);
+       if ($total) {
+        for($i=0;$i<$total;$i++) {
+          echo date('Y-m-d H:i:s').' Polling relays...'.PHP_EOL;
+          $cmd="\x01";
+          $cmd.="\x01";
+          $cmd.="\x27";
+          $cmd.=chr(0x10+$properties[$i]['TYPE_NUM']-1);
+          $cmd.="\x00";
+          $cmd.="\x01";
+          $fresult=$this->write_com($com,$cmd,6,1);
+          if ( (ord($fresult[3]) == 0) ) {
+              $state=0;
+          } elseif ( ( ord($fresult[3]) == 1) ) {
+              $state=1;
+          } else {$state=NULL;}
+            debmes('[get] '.$properties[$i]['TYPE_NUM'].' rel state:'.$state, 'bolid');
           if(isset($properties[$i]['LINKED_OBJECT']) && isset($properties[$i]['LINKED_PROPERTY']) && $state!==NULL) {
               sg($properties[$i]['LINKED_OBJECT'].'.'.$properties[$i]['LINKED_PROPERTY'], $state, array($this->name => '0'));
           }

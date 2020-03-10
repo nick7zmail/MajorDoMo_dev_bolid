@@ -34,6 +34,8 @@ while (1)
          $dev_bolid_module->processCycle($com[$i], 'check', 'zones');
          //опрос разделов
          $dev_bolid_module->processCycle($com[$i], 'check', 'sections');
+         //опрос реле
+         $dev_bolid_module->processCycle($com[$i], 'check', 'relays');
          fclose($com[$i]);
        }
      }
